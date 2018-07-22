@@ -9,14 +9,24 @@ let ctx = canvas.getContext('2d');
 let time = 0;
 let points = [];
 let radius = 20;
+let scoreRect = {
+	x: 5, y: 5, w: 550, h: 45
+};
 let gameRect = {
-	x: 10, y: 10, w: 550, h: 650
-}
+	x: scoreRect.x, y: scoreRect.y + scoreRect.h + 3, 
+	w: scoreRect.w, h: 600
+};
+let endRect = {
+	x: gameRect.x, y: gameRect.y + gameRect.h + 3,
+	w: gameRect.w, h: 45
+};
 let to = {};
 
 function drawGameRect() {
 	ctx.beginPath();
+	ctx.rect(scoreRect.x, scoreRect.y, scoreRect.w, scoreRect.h);
 	ctx.rect(gameRect.x, gameRect.y, gameRect.w, gameRect.h);
+	ctx.rect(endRect.x, endRect.y, endRect.w, endRect.h);
 	ctx.stroke();
 	ctx.closePath();
 }
@@ -39,18 +49,20 @@ function drawLine() {
 function checkColision(point) {
 
 	if(
-		point.x + radius >= gameRect.x + gameRect.w ||
+		point.x + radius > gameRect.x + gameRect.w ||
 		point.x - radius < gameRect.x
 	) {
 		point.xn *= -1;
 	}
 	if(
-		point.y + radius >= gameRect.y + gameRect.h ||
 		point.y - radius < gameRect.y
 	) {
 		point.yn *= -1;
 	}
 
+	if(point.y - radius > gameRect.y + gameRect.h) {
+		point.yn = point.xn = 0;
+	}
 }
 
 function drawBalls() {
@@ -77,12 +89,12 @@ function drawBalls() {
 }
 
 function init() {
-	for(let i = 0; i < 20; i++) {
+	for(let i = 0; i < 60; i++) {
 		points.push({
 			x: gameRect.x + radius + Math.floor(Math.random() * (gameRect.w - radius - gameRect.x)), 
 			y: gameRect.y + radius + Math.floor(Math.random() * (gameRect.h - radius - gameRect.y)),
-			xn: Math.random()*4 + 1.5, 
-			yn: Math.random()*5 + 1.5,
+			xn: 0, 
+			yn: 0,
 			color: `rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`
 		});
 	}
@@ -95,8 +107,10 @@ canvas.onmousemove = (ev) => {
 
 canvas.onclick = (ev) => {
 	for (let point of points) {
-		point.toX = ev.pageX;
-		point.toY = ev.pageY;
+		let xdiff = ev.pageX - point.x;
+		let ydiff = ev.pageY - point.y
+		point.xn = xdiff/Math.sqrt(xdiff**2 + ydiff**2) * 3;
+		point.yn = ydiff/Math.sqrt(xdiff**2 + ydiff**2) * 3;
 	}	
 }
 
